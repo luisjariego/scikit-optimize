@@ -2,7 +2,9 @@ import numpy as np
 import warnings
 
 from scipy.stats import norm
+import random
 
+iteration = 0
 
 def gaussian_acquisition_1D(X, model, y_opt=None, acq_func="LCB",
                             acq_func_kwargs=None, return_grad=True):
@@ -33,11 +35,34 @@ def _gaussian_acquisition(X, model, y_opt=None, acq_func="LCB",
         acq_func_kwargs = dict()
     xi = acq_func_kwargs.get("xi", 0.01)
     kappa = acq_func_kwargs.get("kappa", 1.96)
+    #TODO hecho por mi ############################################
+    acq_noise = acq_func_kwargs.get("acq_noise", 0) #default = 0
+    noise = np.random.randn() * acq_noise #Ruido gaussiano
+    ###############################################################
 
     # Evaluate acquisition function
     per_second = acq_func.endswith("ps")
     if per_second:
         model, time_model = model.estimators_
+
+    #TODO hecho por mi ############################################
+    #print (X)
+    global iteration
+    n_candidates=3
+    candidates = ["LCB", "EI", "PI"]
+    if acq_func == "random": 
+        #random.seed(iteration)
+        choice = random.randint(0, n_candidates-1)
+        acq_func = candidates[choice]
+        #print (iteration)
+        #print ("acq_func", acq_func)
+    elif acq_func == "sequential":
+        choice = iteration % n_candidates
+        acq_func = candidates[choice]
+        #print (iteration)
+        #print ("acq_func", acq_func)
+    iteration += 1
+    ###############################################################
 
     if acq_func == "LCB":
         func_and_grad = gaussian_lcb(X, model, kappa, return_grad)
@@ -81,10 +106,10 @@ def _gaussian_acquisition(X, model, y_opt=None, acq_func="LCB",
 
     else:
         raise ValueError("Acquisition function not implemented.")
-
+    
     if return_grad:
         return acq_vals, acq_grad
-    return acq_vals
+    return acq_vals + noise # TODO hecho por mi: Agregar ruido a la funcion de adquisicion
 
 
 def gaussian_lcb(X, model, kappa=1.96, return_grad=False):

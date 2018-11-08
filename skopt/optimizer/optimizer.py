@@ -149,7 +149,7 @@ class Optimizer(object):
         self.acq_func = acq_func
         self.acq_func_kwargs = acq_func_kwargs
 
-        allowed_acq_funcs = ["gp_hedge", "EI", "LCB", "PI", "EIps", "PIps"]
+        allowed_acq_funcs = ["random", "sequential", "gp_hedge", "EI", "LCB", "PI", "EIps", "PIps"] #TODO hecho por mi
         if self.acq_func not in allowed_acq_funcs:
             raise ValueError("expected acq_func to be in %s, got %s" %
                              (",".join(allowed_acq_funcs), self.acq_func))
