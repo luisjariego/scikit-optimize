@@ -38,6 +38,19 @@ def _gaussian_acquisition(X, model, y_opt=None, acq_func="LCB",
     #TODO hecho por mi ############################################
     acq_noise = acq_func_kwargs.get("acq_noise", 0) #default = 0
     noise = np.random.randn() * acq_noise #Ruido gaussiano
+    
+    n_candidates=3
+    lcb_weight = acq_func_kwargs.get("lcb_w", 1./n_candidates)
+    ei_weight = acq_func_kwargs.get("ei_w", 1./n_candidates)
+    pi_weight = acq_func_kwargs.get("pi_w", 1./n_candidates)
+
+    weights_sum =lcb_weight + ei_weight + pi_weight
+    
+    if weights_sum != 1: #The sum must be 1
+        lcb_weight = 1. * lcb_weight / weights_sum
+        ei_weight = 1. * ei_weight / weights_sum
+        pi_weight = 1. * pi_weight / weights_sum
+    
     ###############################################################
 
     # Evaluate acquisition function
@@ -48,7 +61,6 @@ def _gaussian_acquisition(X, model, y_opt=None, acq_func="LCB",
     #TODO hecho por mi ############################################
     #print (X)
     global iteration
-    n_candidates=3
     candidates = ["LCB", "EI", "PI"]
     if acq_func == "random": 
         #random.seed(iteration)
@@ -104,6 +116,22 @@ def _gaussian_acquisition(X, model, y_opt=None, acq_func="LCB",
                 acq_grad *= inv_t
                 acq_grad += acq_vals * (-mu_grad + std*std_grad)
 
+    #TODO hecho por mi ############################################
+    elif acq_func == "weighted":
+        LCB = _gaussian_acquisition(X, model, y_opt=y_opt, acq_func="LCB", return_grad=return_grad, acq_func_kwargs=acq_func_kwargs)
+        EI = _gaussian_acquisition(X, model, y_opt=y_opt, acq_func="EI", return_grad=return_grad, acq_func_kwargs=acq_func_kwargs)
+        PI = _gaussian_acquisition(X, model, y_opt=y_opt, acq_func="PI", return_grad=return_grad, acq_func_kwargs=acq_func_kwargs)
+        
+        if return_grad:
+            LCB, LCB_grad = LCB
+            EI, EI_grad = EI
+            PI, PI_grad = PI
+            
+            acq_grad = lcb_weight * LCB_grad + ei_weight * EI_grad + pi_weight * PI_grad
+        
+        acq_vals = lcb_weight * LCB + ei_weight * EI + pi_weight * PI
+
+    ###############################################################
     else:
         raise ValueError("Acquisition function not implemented.")
     
