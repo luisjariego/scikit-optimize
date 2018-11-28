@@ -1,5 +1,5 @@
 """
-    Script para optimizar funciones de 1D.
+    Script para optimizar funciones de varias dimensiones.
 """
 
 import numpy as np
@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import json
 
 #Abrimos el fichero de configuracion
-with open('configuration.json') as file:
+with open('rastrigin.json') as file:
     conf = json.load(file)
 
 noise_level = conf['noise_level']
@@ -151,7 +151,7 @@ for k, acq_func in enumerate(acquisition_functions):
         # Plot f(x) + contours
         plt.figure()
         plt.title("Objective function and minimum found for '{}'".format(acq_func))
-        plt.plot(grid[:,0], fx, "r--", label="True (unknown)")
+        plt.plot(grid, fx, "r--", label="True (unknown)")
         plt.fill(np.concatenate([grid, grid[::-1]]),
                  np.concatenate(([fx_i - 1.9600 * noise_level for fx_i in fx],
                                  [fx_i + 1.9600 * noise_level for fx_i in fx[::-1]])),
@@ -162,7 +162,7 @@ for k, acq_func in enumerate(acquisition_functions):
         gp = res.models[-1]
         y_pred, sigma = gp.predict(x_gp, return_std=True)
 
-        plt.plot(grid[:,0], y_pred, "g--", label=r"$\mu_{GP}(x)$")
+        plt.plot(grid, y_pred, "g--", label=r"$\mu_{GP}(x)$")
         plt.fill(np.concatenate([grid, grid[::-1]]),
                  np.concatenate([y_pred - 1.9600 * sigma, 
                                  (y_pred + 1.9600 * sigma)[::-1]]),
@@ -191,7 +191,7 @@ for k, acq_func in enumerate(acquisition_functions):
 
             # Plot true function.
             plt.subplot(5, 2, 2*n_iter+1)
-            plt.plot(grid[:,0], fx, "r--", label="True (unknown)")
+            plt.plot(grid, fx, "r--", label="True (unknown)")
             plt.fill(np.concatenate([grid, grid[::-1]]),
                  np.concatenate(([fx_i - 1.9600 * noise_level for fx_i in fx],
                                  [fx_i + 1.9600 * noise_level for fx_i in fx[::-1]])),
@@ -199,7 +199,7 @@ for k, acq_func in enumerate(acquisition_functions):
 
             # Plot GP(x) + contours
             y_pred, sigma = gp.predict(x_gp, return_std=True)
-            plt.plot(grid[:,0], y_pred, "g--", label=r"$\mu_{GP}(x)$")
+            plt.plot(grid, y_pred, "g--", label=r"$\mu_{GP}(x)$")
             plt.fill(np.concatenate([grid, grid[::-1]]),
                      np.concatenate([y_pred - 1.9600 * sigma, 
                                      (y_pred + 1.9600 * sigma)[::-1]]),
@@ -223,13 +223,13 @@ for k, acq_func in enumerate(acquisition_functions):
             plt.subplot(5, 2, 2*n_iter+2)
             
             acq1 = gaussian_ei(x_gp, gp, y_opt=np.min(curr_func_vals))
-            plt.plot(grid[:,0], acq1, "b", label="EI(x)")
+            plt.plot(grid, acq1, "b", label="EI(x)")
             plt.fill_between(grid.ravel(), -2.0, acq1.ravel(), alpha=0.3, color='blue')
             acq2 = gaussian_pi(x_gp, gp, y_opt=np.min(curr_func_vals))
-            plt.plot(grid[:,0], acq2, "r", label="PI(x)")
+            plt.plot(grid, acq2, "r", label="PI(x)")
             plt.fill_between(grid.ravel(), -2.0, acq2.ravel(), alpha=0.3, color='red')
             acq3 = -gaussian_lcb(x_gp, gp, kappa=kappa)
-            plt.plot(grid[:,0], acq3, "g", label="LCB(x)")
+            plt.plot(grid, acq3, "g", label="LCB(x)")
             plt.fill_between(grid.ravel(), -2.0, acq3.ravel(), alpha=0.3, color='green')
             
             if acq_func == "weighted":

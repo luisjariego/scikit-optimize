@@ -1,13 +1,16 @@
 {
     "noise_level": 0.1,
     "seed": 1234,
-    "number_of_calls": 15,
-    "objf_name": "function",
-    "objective_function": "def f(x, noise_level=noise_level): return (np.sin(5 * x[0]) * (1 - np.tanh(x[0] ** 2)) + np.random.randn() * noise_level)",
+    "number_of_calls": 20,
+    "objf_name": "Rastrigin function",
+    "objective_function": "def f(x, noise_level=noise_level): return ((x[0]**2 - 10 * np.cos(2 * np.pi * x[0])) + (x[1]**2 - 10 * np.cos(2 * np.pi * x[1])) + 20 + np.random.randn() * noise_level)",
+    "true_minimum": [0.0,0.0],
+    "global_minimum": 0.0,
     "bounds": {
-        "x": [-2.0,2.0]
+        "x": [-5.12,5.12],
+        "y": [-5.12,5.12]
     },
-    "n_random_starts": 5,
+    "n_random_starts": 10,
     "acquisition_functions": [
         "weighted",
         "sequential",
@@ -31,9 +34,9 @@
     "plot_acquisition": 0,
     "plot_convergence": 0,
     "verbose": 0,
-    "error_file": "ev_errors.txt",
+    "error_file": "rastrigin_errors.txt",
     "save_errors": 1,
-    "stds_file": "ev_stds.txt",
+    "stds_file": "rastrigin_stds.txt",
     "save_stds": 1,
-    "n_runs": 2
+    "n_runs": 20
 }
