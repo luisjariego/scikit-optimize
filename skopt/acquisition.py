@@ -2,7 +2,6 @@ import numpy as np
 import warnings
 
 from scipy.stats import norm
-import random
 
 iteration = 0
 
@@ -37,7 +36,7 @@ def _gaussian_acquisition(X, model, y_opt=None, acq_func="LCB",
     kappa = acq_func_kwargs.get("kappa", 1.96)
     #TODO hecho por mi ############################################
     acq_noise = acq_func_kwargs.get("acq_noise", 0) #default = 0
-    noise = np.random.randn() * acq_noise #Ruido gaussiano
+    noise = np.random.randn(X.shape[0]) * acq_noise #Ruido gaussiano
     
     n_candidates=3
     lcb_weight = acq_func_kwargs.get("lcb_w", 1./n_candidates)
@@ -64,7 +63,7 @@ def _gaussian_acquisition(X, model, y_opt=None, acq_func="LCB",
     candidates = ["LCB", "EI", "PI"]
     if acq_func == "random": 
         #random.seed(iteration)
-        choice = random.randint(0, n_candidates-1)
+        choice = np.random.randint(0, n_candidates-1)
         acq_func = candidates[choice]
         #print (iteration)
         #print ("acq_func", acq_func)
@@ -137,6 +136,7 @@ def _gaussian_acquisition(X, model, y_opt=None, acq_func="LCB",
     
     if return_grad:
         return acq_vals, acq_grad
+
     return acq_vals + noise # TODO hecho por mi: Agregar ruido a la funcion de adquisicion
 
 

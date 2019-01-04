@@ -6,11 +6,22 @@ import numpy as np
 from skopt import gp_minimize
 from skopt.acquisition import gaussian_ei, gaussian_pi, gaussian_lcb, gaussian_acquisition_1D
 from skopt.plots import plot_convergence
+from skopt.benchmarks import hart6, branin
 import matplotlib.pyplot as plt
 import json
+from time import time
+
+import sys
+
+if len(sys.argv) < 2:
+    print ("Por favor, introduce el fichero de errores medios para hacer el plot.")
+    print ("\tpython3 generic_exec.py <fichero_de_configuracion>")
+    quit()
+
+config_file = sys.argv[1]
 
 #Abrimos el fichero de configuracion
-with open('rastrigin.json') as file:
+with open(config_file) as file:
     conf = json.load(file)
 
 noise_level = conf['noise_level']
@@ -23,6 +34,7 @@ obj_func = conf['objective_function']
 bounds = []
 for dim in conf['bounds']:
     bounds.append(conf['bounds'][dim])
+bounds = np.array(bounds).astype(float).tolist()
 
 n_grid = conf['grid']
 n_random_starts = conf['n_random_starts']
@@ -36,6 +48,8 @@ save_errors = conf['save_errors']
 stds_file = conf['stds_file']
 save_stds = conf['save_stds']
 n_runs = conf['n_runs']
+max_time = conf['max_time'] #En segundos TODO usar?
+
 #Funciones de adquisicion
 acquisition_functions = conf['acquisition_functions']
 n_acq_func = len(acquisition_functions)
@@ -53,7 +67,7 @@ for w in conf['weights']:
     acq_func_kwargs[w] = conf['weights'][w]
 
 #Funcion objetivo
-exec(obj_func) #TODO definir asi o de otra forma?
+exec(obj_func) #TODO definir asi?
 #def f(x, noise_level=noise_level):
 #    return (np.sin(5 * x[0]) * (1 - np.tanh(x[0] ** 2)) + np.random.randn() * noise_level)
 
@@ -73,8 +87,14 @@ except KeyError:
     min_x = grid[np.argmin(fx)]
 
 if verbose>0:
-    print ("True minimum of '{}' is:".format(objf_name))
-    print ("x^*={}, f(x^*)={}\n".format(min_x, minimum))#To save errors for each acquisition function
+    print ("The global minimum of '{}' is \nf(x^*)={}, found in".format(objf_name, minimum))
+    try:
+        for w in conf['true_minimum']:
+            tm = conf['true_minimum'][w]
+            print ("\tx^*={}".format(tm))#To save errors for each acquisition function
+    except TypeError:
+        print ("\tx^*={}".format(min_x))#To save errors for each acquisition function
+    print("\n")
 
 if save_errors:
     dump_errors = open(errors_file, 'w')
@@ -93,24 +113,26 @@ for k, acq_func in enumerate(acquisition_functions):
     if verbose>0:
         print ("ACQUISITION FUNCTION USED: '{}'".format(acq_func))
     random_state = seed
+    np.random.seed(seed) #TODO misma semilla para numpy
     errors = np.empty((n_runs, n_calls))
     #Ejecutamos el optimizador
     for i in range(n_runs):
         print ("'{}': Iteration ".format(acq_func), "%i" % (i+1), end="\r")
         res = gp_minimize(f, bounds, n_calls=n_calls, n_random_starts=n_random_starts,
                             acq_func=acq_func, random_state=random_state, n_points=n_points,
-                            kappa=kappa, xi=xi, acq_func_kwargs=acq_func_kwargs)
-
-        #El minimo aproximado es
-        if verbose>0:
-            print ("\nMinimum found:")
-            print ("x^* = %.4f, f(x^*)=%.4f" % (res.x[0], res.fun)) if oned else print ("x^*={}, f(x^*)={}".format(res.x, res.fun))
+                            kappa=kappa, xi=xi, verbose=(verbose > 1), acq_func_kwargs=acq_func_kwargs)
 
         #Hallo el error en cada caso
         errors[i] = res.func_vals - minimum
 
         #Preparamos para la siguiente ejecucion
         #random_state += 1 #TODO ir cambiando semilla?
+        
+        #El minimo aproximado es
+        if verbose>0:
+            print ("\nMinimum found:")
+            print ("x^* = %.4f, f(x^*)=%.4f" % (res.x[0], res.fun)) if oned else print ("x^*={}, f(x^*)={}".format(res.x, res.fun))
+
     print ("\n")
 
     #Media y desviacion tipica de los errores
@@ -147,7 +169,7 @@ for k, acq_func in enumerate(acquisition_functions):
         plot_convergence(res, ax=ax_list[1], true_minimum=minimum)
 
     #Plot de la funcion + observaciones (ultima ejecucion)
-    if plot_function:
+    if plot_function and len(bounds[0])<2:
         # Plot f(x) + contours
         plt.figure()
         plt.title("Objective function and minimum found for '{}'".format(acq_func))
@@ -177,9 +199,11 @@ for k, acq_func in enumerate(acquisition_functions):
         plt.legend(loc="best", prop={'size': 8}, numpoints=1)
         
         plt.grid()
+    elif plot_function:
+        print ("It is not possible to plot a function with more than 1D.")
     
     #Plot de la funcion de adquisicion (ultima ejecucion)
-    if plot_acquisition:
+    if plot_acquisition and len(bounds[0])<2:
         fig, ax_list = plt.subplots(5,2)
         fig.suptitle("Function and acquisition for '{}'".format(acq_func))
         
@@ -263,8 +287,11 @@ for k, acq_func in enumerate(acquisition_functions):
             if n_iter != 4:
                 plt.tick_params(axis='x', which='both', bottom='off', 
                                 top='off', labelbottom='off') 
+    elif plot_acquisition:
+        print ("It is not possible to plot the acquisition of a function with more than 1D.")
     
     plt.show()
 
 if save_errors:
     dump_errors.close()
+

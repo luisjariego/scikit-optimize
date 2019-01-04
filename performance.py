@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 if len(sys.argv) < 2:
     print ("Por favor, introduce el fichero de errores medios para hacer el plot.")
-    print ("\tpython3 performance.py <fichero_medias> <<opt:fichero_stds>>")
+    print ("\tpython3 performance.py <fichero_medias> <<opt:fichero_stds>> <<opt:n_runs>>")
     quit()
 
 error_file = sys.argv[1]
@@ -17,9 +17,13 @@ try:
     stds = 1
 except:
     stds = 0
+
+try:
+    n_runs = int(np.round(sys.argv[3]))
+except:
+    n_runs = 1
     
 plot_conv = True
-#minimum = -0.9094
 
 #Preparamos el plot
 if plot_conv:
@@ -64,20 +68,22 @@ while line != "":
     #Plot de la convergencia
     if plot_conv:
         x = range(1, len(errors)+1)
-        #Errores bars
-        #ax[0].bar(x, errors, alpha=0.5, label=acq_func)
-        #Plot errores
+        st_error = error_stds/np.sqrt(n_runs) #TODO plot con standard error o desviacion tipica?
         if stds:
-            y1 = errors - error_stds
-            y2 = errors + error_stds
+            #Plot errores
+            y1 = np.maximum(0, errors - st_error)
+            y2 = errors + st_error
             ax[0].fill_between(x, y1=y1, y2=y2, alpha=0.2)
-        ax[0].plot(x, errors, label=acq_func)
-        #Plot convergencia
-        if stds:
-            y1 = conv + error_stds
-            y2 = conv - error_stds
+            ax[0].errorbar(x, errors, yerr = st_error , fmt = '-', label=acq_func)
+
+            #Plot convergencia
+            y1 = np.maximum(0, conv - st_error)
+            y2 = conv + st_error
             ax[1].fill_between(x, y1=y1, y2=y2, alpha=0.2)
-        ax[1].plot(x, conv, label=acq_func)
+            ax[1].errorbar(x, conv, yerr = st_error , fmt = '-', label=acq_func)
+        else:
+            ax[0].plot(x, errors, label=acq_func)
+            ax[1].plot(x, conv, label=acq_func)
         ax[1].axhline(0.0, linestyle='dashed', color='red', linewidth=1)
     
     line = f.readline()
