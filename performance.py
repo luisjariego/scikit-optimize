@@ -19,10 +19,10 @@ except:
     stds = 0
 
 try:
-    n_runs = int(np.round(sys.argv[3]))
+    n_runs = int(sys.argv[3])
 except:
     n_runs = 1
-    
+
 plot_conv = True
 
 #Preparamos el plot
@@ -52,7 +52,7 @@ while line != "":
     line = line.split(':')
     acq_func = line[0]
     errors = [float(y) for y in line[1].split(',')[:-1]]
-    errors = np.array(errors)
+    errors = np.abs(np.array(errors)) #TODO quitar valores absolutos
     #Calculamos convergencia
     conv = np.empty(len(errors))
     conv[0] = errors[0]
@@ -64,12 +64,12 @@ while line != "":
             conv[i+1] = conv[i]
         i+=1
     #conv = minimum + conv
-
+    print("Minimum error:", min(errors))
     #Plot de la convergencia
     if plot_conv:
         x = range(1, len(errors)+1)
-        st_error = error_stds/np.sqrt(n_runs) #TODO plot con standard error o desviacion tipica?
         if stds:
+            st_error = error_stds/np.sqrt(n_runs) #TODO plot con standard error o desviacion tipica?
             #Plot errores
             y1 = np.maximum(0, errors - st_error)
             y2 = errors + st_error

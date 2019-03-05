@@ -8,6 +8,8 @@ from skopt.acquisition import gaussian_ei, gaussian_pi, gaussian_lcb, gaussian_a
 from skopt.plots import plot_convergence
 from skopt.benchmarks import hart6, branin
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
 import json
 from time import time
 
@@ -25,7 +27,11 @@ with open(config_file) as file:
     conf = json.load(file)
 
 noise_level = conf['noise_level']
-seed = conf['seed']
+if len(sys.argv) == 2:
+    seed = conf['seed']
+else:
+    seed = int(sys.argv[2])
+
 n_calls = conf['number_of_calls']
 #La funcion a optimizar debe llamarse 'f', o de lo contrario cambiar la llamada a la funcion
 objf_name = conf['objf_name']
@@ -78,6 +84,7 @@ for i, b in enumerate(bounds):
     grid[:,i] = np.linspace(b[0], b[1], n_grid)
     
 fx = [f(x_i, noise_level=0.0) for x_i in grid] #Sin ruido para hallar el minimo real
+
 #Minimo dado o grid
 try:
     minimum = conf['global_minimum']
@@ -123,7 +130,7 @@ for k, acq_func in enumerate(acquisition_functions):
                             kappa=kappa, xi=xi, verbose=(verbose > 1), acq_func_kwargs=acq_func_kwargs)
 
         #Hallo el error en cada caso
-        errors[i] = res.func_vals - minimum
+        errors[i] = res.func_vals - minimum #TODO valor absoluto por si hay ruido?
 
         #Preparamos para la siguiente ejecucion
         #random_state += 1 #TODO ir cambiando semilla?
@@ -169,7 +176,7 @@ for k, acq_func in enumerate(acquisition_functions):
         plot_convergence(res, ax=ax_list[1], true_minimum=minimum)
 
     #Plot de la funcion + observaciones (ultima ejecucion)
-    if plot_function and len(bounds[0])<2:
+    if plot_function and len(bounds)<2:
         # Plot f(x) + contours
         plt.figure()
         plt.title("Objective function and minimum found for '{}'".format(acq_func))
@@ -195,15 +202,39 @@ for k, acq_func in enumerate(acquisition_functions):
         
         plt.plot(min_x, minimum, "go", label="True minimum")
         plt.plot(res.x[0], res.fun, "bo", label="Minimum found")
+        plt.title(objf_name)
         #plt.title(r"$x^* = %.4f, f(x^*) = %.4f$" % (res.x[0], res.fun))
         plt.legend(loc="best", prop={'size': 8}, numpoints=1)
         
         plt.grid()
+
+    elif plot_function and len(bounds)<3:
+        fig = plt.figure()
+        ax = fig.gca(projection='3d')
+        ax = Axes3D(fig)
+
+        # Make data.
+        X, Y = np.meshgrid(grid[:,0], grid[:,1])
+        R = X, Y
+        Z = f(R, noise_level=0.0)
+
+        # Plot the surface.
+        surf = ax.plot_surface(X, Y, Z, cmap=cm.coolwarm, linewidth=0, antialiased=False)
+
+        # Add a color bar which maps values to colors.
+        fig.colorbar(surf, shrink=0.5, aspect=5)
+        ax.scatter(*min_x, zs=[minimum], c="green", label="True minimum", depthshade=True)
+        ax.scatter(*res.x, zs=[res.fun], c="purple", label="Minimum found")
+        plt.title(objf_name)
+        plt.legend(loc="best", prop={'size': 8}, numpoints=1)
+        
+        plt.grid()
+
     elif plot_function:
-        print ("It is not possible to plot a function with more than 1D.")
+        print ("It is not possible to plot a function with those dimensions.")
     
     #Plot de la funcion de adquisicion (ultima ejecucion)
-    if plot_acquisition and len(bounds[0])<2:
+    if plot_acquisition and len(bounds)<2:
         fig, ax_list = plt.subplots(5,2)
         fig.suptitle("Function and acquisition for '{}'".format(acq_func))
         
@@ -288,7 +319,7 @@ for k, acq_func in enumerate(acquisition_functions):
                 plt.tick_params(axis='x', which='both', bottom='off', 
                                 top='off', labelbottom='off') 
     elif plot_acquisition:
-        print ("It is not possible to plot the acquisition of a function with more than 1D.")
+        print ("It is not possible to plot the acquisition of a function with those dimensions.")
     
     plt.show()
 

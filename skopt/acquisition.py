@@ -38,17 +38,26 @@ def _gaussian_acquisition(X, model, y_opt=None, acq_func="LCB",
     acq_noise = acq_func_kwargs.get("acq_noise", 0) #default = 0
     noise = np.random.randn(X.shape[0]) * acq_noise #Ruido gaussiano
     
-    n_candidates=3
+    n_candidates=4 #TODO agregar aleatory
+    candidates = ["LCB", "EI", "PI", "aleatory"]
+    
     lcb_weight = acq_func_kwargs.get("lcb_w", 1./n_candidates)
     ei_weight = acq_func_kwargs.get("ei_w", 1./n_candidates)
     pi_weight = acq_func_kwargs.get("pi_w", 1./n_candidates)
+    al_weight = acq_func_kwargs.get("al_w", 1./n_candidates)
 
-    weights_sum =lcb_weight + ei_weight + pi_weight
+    weights_sum = lcb_weight + ei_weight + pi_weight + al_weight
     
-    if weights_sum != 1: #The sum must be 1
+    if weights_sum == 0:
+        lcb_weight = 1./n_candidates
+        ei_weight = 1./n_candidates
+        pi_weight = 1./n_candidates
+        al_weight = 1./n_candidates
+    elif weights_sum != 1: #The sum must be 1
         lcb_weight = 1. * lcb_weight / weights_sum
         ei_weight = 1. * ei_weight / weights_sum
         pi_weight = 1. * pi_weight / weights_sum
+        al_weight = 1. * al_weight / weights_sum
     
     ###############################################################
 
@@ -58,9 +67,7 @@ def _gaussian_acquisition(X, model, y_opt=None, acq_func="LCB",
         model, time_model = model.estimators_
 
     #TODO hecho por mi ############################################
-    #print (X)
     global iteration
-    candidates = ["LCB", "EI", "PI"]
     if acq_func == "random": 
         #random.seed(iteration)
         choice = np.random.randint(0, n_candidates-1)
@@ -120,15 +127,31 @@ def _gaussian_acquisition(X, model, y_opt=None, acq_func="LCB",
         LCB = _gaussian_acquisition(X, model, y_opt=y_opt, acq_func="LCB", return_grad=return_grad, acq_func_kwargs=acq_func_kwargs)
         EI = _gaussian_acquisition(X, model, y_opt=y_opt, acq_func="EI", return_grad=return_grad, acq_func_kwargs=acq_func_kwargs)
         PI = _gaussian_acquisition(X, model, y_opt=y_opt, acq_func="PI", return_grad=return_grad, acq_func_kwargs=acq_func_kwargs)
+        AL = _gaussian_acquisition(X, model, y_opt=y_opt, acq_func="aleatory", return_grad=return_grad, acq_func_kwargs=acq_func_kwargs)
+        #print ("LCB: ", LCB)
+        #print ("EI: ", EI)
+        #print ("PI: ", PI)
+        #print ("AL: ", AL)
         
         if return_grad:
             LCB, LCB_grad = LCB
             EI, EI_grad = EI
             PI, PI_grad = PI
+            AL, AL_grad = AL
             
-            acq_grad = lcb_weight * LCB_grad + ei_weight * EI_grad + pi_weight * PI_grad
+            acq_grad = lcb_weight * LCB_grad + ei_weight * EI_grad + pi_weight * PI_grad + al_weight * AL_grad
         
-        acq_vals = lcb_weight * LCB + ei_weight * EI + pi_weight * PI
+        acq_vals = lcb_weight * LCB + ei_weight * EI + pi_weight * PI + al_weight * AL
+
+    elif acq_func == "aleatory":
+        if return_grad:
+            mu, std, mu_grad, std_grad = model.predict(
+                    X, return_std=True, return_mean_grad=True,
+                    return_std_grad=True)
+            acq_grad = np.zeros(mu_grad.shape) ###
+        
+        acq_vals = np.random.uniform(size=X.shape[0]) #TODO segun una uniforme, cambiar?
+        #acq_vals = np.random.randn(X.shape[0]) #segun una normal
 
     ###############################################################
     else:
