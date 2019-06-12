@@ -1,0 +1,51 @@
+{
+    "noise_level": 0.0,
+    "seed": 1,
+    "number_of_calls": 30,
+    "objf_name": "Hartmann 6-dimension function",
+    "objective_function": "def f(x, noise_level=noise_level): return hart6(x)",
+    "true_minimum": {
+        "1": [0.20169, 0.15001, 0.476874, 0.275332, 0.311652, 0.6573]
+    },
+    "global_minimum": -3.32237,
+    "bounds": {
+        "t": [0.0, 1.0],
+        "v": [0.0, 1.0],
+        "w": [0.0, 1.0],
+        "x": [0.0, 1.0],
+        "y": [0.0, 1.0],
+        "z": [0.0, 1.0]
+    },
+    "n_random_starts": 1,
+    "acquisition_functions": [
+        "aleatory",
+        "weighted",
+        "sequential",
+        "random",
+        "EI",
+        "PI",
+        "LCB",
+        "gp_hedge"
+    ],
+    "weights": {
+      "lcb_w": 7.0,
+      "ei_w": 2.9,
+      "pi_w": 1.4,
+      "al_w": 5.8
+    },
+    "n_points_sample_acq": 10000,
+    "grid": 1000,
+    "kappa": 1.96,
+    "xi": 0.01,
+    "acquisition_noise": 0.0,
+    "plot_function": 0,
+    "plot_acquisition": 0,
+    "plot_convergence": 0,
+    "verbose": 0,
+    "error_file": "hartmann6_errors.txt",
+    "save_errors": 1,
+    "stds_file": "hartmann6_stds.txt",
+    "save_stds": 1,
+    "max_time": 30,
+    "n_runs": 5
+}

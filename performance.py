@@ -64,7 +64,7 @@ while line != "":
             conv[i+1] = conv[i]
         i+=1
     #conv = minimum + conv
-    print("Minimum error:", min(errors))
+    print("Minimum error for '{}':".format(acq_func), min(errors))
     #Plot de la convergencia
     if plot_conv:
         x = range(1, len(errors)+1)

@@ -1,0 +1,49 @@
+{
+    "noise_level": 0.0,
+    "seed": 30,
+    "number_of_calls": 100,
+    "objf_name": "Branin function",
+    "objective_function": "def f(x, noise_level=noise_level): PI = np.pi; a = 1; b = 5.1/(4*PI**2); c = 5/PI; r = 6; s = 10; t = 1/(8*PI); return a*(x[1] - b*x[0]**2 + c*x[0] - r)**2 + s*(1-t)*np.cos(x[0]) + s",
+    "true_minimum": {
+        "1": [9.42478, 2.475],
+        "2": [-3.141592, 12.275],
+        "3": [3.141592, 2.275]
+    },
+    "global_minimum": 0.397887,
+    "bounds": {
+        "x": [-5.0, 10.0],
+        "y": [0.0, 15.0]
+    },
+    "n_random_starts": 1,
+    "acquisition_functions": [
+        "aleatory",
+        "weighted",
+        "sequential",
+        "random",
+        "EI",
+        "PI",
+        "LCB",
+        "gp_hedge"
+    ],
+    "weights": {
+      "al_w": 2.5,
+      "ei_w": 2.5,
+      "lcb_w": 3.25,
+      "pi_w": 0.3
+    },
+    "n_points_sample_acq": 10000,
+    "grid": 2000,
+    "kappa": 1.96,
+    "xi": 0.01,
+    "acquisition_noise": 0.0,
+    "plot_function": 0,
+    "plot_acquisition": 0,
+    "plot_convergence": 0,
+    "verbose": 0,
+    "error_file": "branin_errors.txt",
+    "save_errors": 1,
+    "stds_file": "branin_stds.txt",
+    "save_stds": 1,
+    "max_time": 30,
+    "n_runs": 5
+}

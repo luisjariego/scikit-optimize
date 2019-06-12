@@ -1,0 +1,42 @@
+{
+    "noise_level": 0.1,
+    "seed": 123,
+    "number_of_calls": 5,
+    "objf_name": "Example",
+    "objective_function": "def f(x, noise_level=noise_level): return (np.sin(5 * x[0]) * (1 - np.tanh(x[0] ** 2)) + np.random.randn() * noise_level)",
+    "bounds": {
+        "x": [-2.0,2.0]
+    },
+    "n_random_starts": 1,
+    "acquisition_functions": [
+        "aleatory",
+        "weighted",
+        "sequential",
+        "random",
+        "EI",
+        "PI",
+        "LCB",
+        "gp_hedge"
+    ],
+    "weights": {
+      "al_w": 0.0,
+      "ei_w": 5.0,
+      "lcb_w": 1.0,
+      "pi_w": 2.0
+    },
+    "n_points_sample_acq": 10000,
+    "grid": 1000,
+    "kappa": 1.96,
+    "xi": 0.01,
+    "acquisition_noise": 0.0,
+    "plot_function": 0,
+    "plot_acquisition": 1,
+    "plot_convergence": 0,
+    "verbose": 0,
+    "error_file": "ev_errors.txt",
+    "save_errors": 0,
+    "stds_file": "ev_stds.txt",
+    "save_stds": 0,
+    "max_time": 30,
+    "n_runs": 1
+}

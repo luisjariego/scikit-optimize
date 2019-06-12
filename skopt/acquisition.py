@@ -150,7 +150,7 @@ def _gaussian_acquisition(X, model, y_opt=None, acq_func="LCB",
                     return_std_grad=True)
             acq_grad = np.zeros(mu_grad.shape) ###
         
-        acq_vals = np.random.uniform(size=X.shape[0]) #TODO segun una uniforme, cambiar?
+        acq_vals = np.random.uniform(size=X.shape[0]) #segun una uniforme
         #acq_vals = np.random.randn(X.shape[0]) #segun una normal
 
     ###############################################################

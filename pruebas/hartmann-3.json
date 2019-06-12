@@ -1,0 +1,48 @@
+{
+    "noise_level": 0.0,
+    "seed": 1,
+    "number_of_calls": 35,
+    "objf_name": "Hartmann 3-dimension function",
+    "objective_function": "def f(x, noise_level=noise_level): alpha = np.array([1.0, 1.2, 3.0, 3.2]); A = np.array([[3.0, 10, 30], [0.1, 10, 35], [3.0, 10, 30], [0.1, 10, 35]]); P = 10**(-4) * np.array([[3689, 1170, 2673],[4699, 4387, 7470],[1091, 8732, 5547],[381, 5743, 8828]]); return -np.sum([alpha[i]*np.exp(-np.sum([A[i, j]*(x[j]-P[i, j])**2 for j in range(3)])) for i in range(4)])",
+    "true_minimum": {
+        "1": [0.114614, 0.555649, 0.852547]
+    },
+    "global_minimum": -3.86278,
+    "bounds": {
+        "x": [0.0, 1.0],
+        "y": [0.0, 1.0],
+        "z": [0.0, 1.0]
+    },
+    "n_random_starts": 1,
+    "acquisition_functions": [
+        "aleatory",
+        "weighted",
+        "sequential",
+        "random",
+        "EI",
+        "PI",
+        "LCB",
+        "gp_hedge"
+    ],
+    "weights": {
+      "al_w": 5.8,
+      "ei_w": 2.9,
+      "lcb_w": 7.0,
+      "pi_w": 1.4
+    },
+    "n_points_sample_acq": 10000,
+    "grid": 1000,
+    "kappa": 1.96,
+    "xi": 0.01,
+    "acquisition_noise": 0.0,
+    "plot_function": 0,
+    "plot_acquisition": 0,
+    "plot_convergence": 0,
+    "verbose": 0,
+    "error_file": "hartmann3_errors.txt",
+    "save_errors": 1,
+    "stds_file": "hartmann3_stds.txt",
+    "save_stds": 1,
+    "max_time": 30,
+    "n_runs": 5
+}
